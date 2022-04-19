@@ -1,5 +1,6 @@
 package ru.nesterov.app.controllers;
 
+import entities.MyResponse;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,6 +22,8 @@ import java.util.stream.Collectors;
 
 @Controller
 public class MyController {
+
+    private MyResponse myResponse;
 
     @PostMapping(name = "parsefile")
     public ResponseEntity fromFile(@RequestParam(name = "file") MultipartFile file) throws IOException {
@@ -38,27 +42,26 @@ public class MyController {
         }
         String body = temp.toString();
 
-        //находим количество заголовков
+        //разбиваем на строки
         List<String> lines = Arrays.asList(body.split("\\n|\\r"));
-        lines = lines.stream().filter(s-> !s.isEmpty()).collect(Collectors.toList());
-        long countHeads = lines.stream().filter(s -> s.startsWith("#")).count();
+        lines = lines.stream().filter(s -> !s.isEmpty()).collect(Collectors.toList());
+
+        myResponse = new MyResponse();
+        myResponse.setLines(lines);
+
+        LinkedHashMap<String, Integer> map = new LinkedHashMap<>();
 
         //форимируем оглавление файла
         StringBuilder headers = new StringBuilder();
         for (int i = 0; i < lines.size(); i++) {
-            if (lines.get(i).startsWith("#")) {
-                headers
-                        .append(lines.get(i))
-                        .append(" -- line ")
-                        .append(i + countHeads + 2)
-                        .append("\n");
-            }
+            if (lines.get(i).startsWith("#"))
+                map.put(lines.get(i), i);
         }
+        myResponse.setHeaders(map);
 
-        // формируем ответ в виде файла с оглавлением
+        // формируем ответ в виде json
         HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.add("content-disposition", "attachment; filename= Changed " + file.getOriginalFilename());
-        responseHeaders.add("Content-Type", "application/download; charset=UTF-8");
-        return new ResponseEntity(headers.append("\n").append(body).toString(), responseHeaders, HttpStatus.OK);
+        responseHeaders.add("Content-Type", "application/json; charset=UTF-8");
+        return new ResponseEntity(myResponse, responseHeaders, HttpStatus.OK);
     }
 }
