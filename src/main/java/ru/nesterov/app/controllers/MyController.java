@@ -11,6 +11,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author Sergey Nesterov
@@ -37,15 +39,16 @@ public class MyController {
         String body = temp.toString();
 
         //находим количество заголовков
-        String[] lines = body.split("\\n|\\r");
-        long countHeads = Arrays.stream(lines).filter(s -> s.startsWith("#")).count();
+        List<String> lines = Arrays.asList(body.split("\\n|\\r"));
+        lines = lines.stream().filter(s-> !s.isEmpty()).collect(Collectors.toList());
+        long countHeads = lines.stream().filter(s -> s.startsWith("#")).count();
 
         //форимируем оглавление файла
         StringBuilder headers = new StringBuilder();
-        for (int i = 0; i < lines.length; i++) {
-            if (lines[i].startsWith("#")) {
+        for (int i = 0; i < lines.size(); i++) {
+            if (lines.get(i).startsWith("#")) {
                 headers
-                        .append(lines[i])
+                        .append(lines.get(i))
                         .append(" -- line ")
                         .append(i + countHeads + 2)
                         .append("\n");
