@@ -10,22 +10,22 @@ import java.util.List;
 /**
  * @author Sergey Nesterov
  */
-@ToString
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Setter
 @Getter
-public class Header{
+public class MyHeader {
     @JsonIgnore
-    private Header parent;
+    private MyHeader parent;
     private String name;
     @JsonIgnore
     private int level;
     private int lineNumber;
-    private List<Header> child;
+    private List<MyHeader> subHeaders;
 
-    public void push(Header header){
-        if(child == null) child = new ArrayList<>();
-        child.add(header);
+    public void addToSubHeaders(MyHeader myHeader){
+        if(subHeaders == null) subHeaders = new ArrayList<>();
+        subHeaders.add(myHeader);
     }
 }

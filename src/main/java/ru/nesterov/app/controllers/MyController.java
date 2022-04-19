@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 @Controller
 public class MyController {
 
-    private List<Header> headers;
+    private List<MyHeader> myHeaders;
 
     @PostMapping(name = "parsefile")
     public ResponseEntity fromFile(@RequestParam(name = "file") MultipartFile file) throws IOException {
@@ -46,21 +46,21 @@ public class MyController {
         List<String> lines = Arrays.asList(body.split("\\n|\\r"));
         lines = lines.stream().filter(s -> !s.isEmpty()).collect(Collectors.toList());
 
+        myHeaders = new ArrayList<>();
+        MyHeader before = null;
 
-
-        headers = new ArrayList<>();
-        Header before = null;
         //форимируем оглавление файла
         for (int i = 0; i < lines.size(); i++) {
             String line = lines.get(i);
             if (line.startsWith("#")) {
-                before = myMetod(before, line, i);
+                before = addHeader(before, line, i);
             }
         }
 
+        //формируем объект ответа
         MyResponse myResponse = new MyResponse();
         myResponse.setLines(lines);
-        myResponse.setHeaders(headers);
+        myResponse.setMyHeaders(myHeaders);
 
         // формируем ответ в виде json
         HttpHeaders responseHeaders = new HttpHeaders();
@@ -68,19 +68,24 @@ public class MyController {
         return new ResponseEntity(myResponse, responseHeaders, HttpStatus.OK);
     }
 
-    private Header myMetod(Header before, String line, int i) {
-        System.out.println(before);
+    /**
+     * Формирует иерархию заголовков
+     * @param before предыдущий заголовок
+     * @param line строка, содержащая обрабатываемый заголовок
+     * @param i номер строки заголовка
+     * @return объект обрабатанного заголовка
+     */
+    private MyHeader addHeader(MyHeader before, String line, int i) {
         if (before == null) {
-            Header now = new Header(null, line, line.lastIndexOf("#"), i, null);
-            headers.add(now);
+            MyHeader now = new MyHeader(null, line, line.lastIndexOf("#"), i, null);
+            myHeaders.add(now);
             return now;
         } else if (before.getLevel() < line.lastIndexOf("#")) {
-            Header now = new Header(null, line, line.lastIndexOf("#"), i, null);
-            before.push(now);
-            System.out.println(before);
+            MyHeader now = new MyHeader(before, line, line.lastIndexOf("#"), i, null);
+            before.addToSubHeaders(now);
             return now;
         } else {
-            return myMetod(before.getParent(),line,i);
+            return addHeader(before.getParent(),line,i);
         }
     }
 }

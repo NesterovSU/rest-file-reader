@@ -16,5 +16,5 @@ import java.util.List;
 @NoArgsConstructor
 public class MyResponse {
     private List<String> lines;
-    private List<Header> headers;
+    private List<MyHeader> myHeaders;
 }
