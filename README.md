@@ -33,12 +33,12 @@ Rest-контроллер с одной функией.
             "lineNumber": 4,
             "subHeaders": [
                 {
-                    "name": "##Заголовок2.1",
+                    "name": "##Подзаголовок2.1",
                     "lineNumber": 5,
                     "subHeaders": null
                 },
                 {
-                    "name": "##Заголовок2.2",
+                    "name": "##Подзаголовок2.2",
                     "lineNumber": 8,
                     "subHeaders": null
                 }
